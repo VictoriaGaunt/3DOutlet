@@ -114,11 +114,14 @@ const modal = ref({
   description: '',
 })
 
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
 const icons = {
-  mail: '/footer5.png',
-  phone: '/footer8.png',
-  telegram: '/footer7.png',
-  whatsapp: '/footer6.png',
+  mail: asset('footer5.png'),
+  phone: asset('footer8.png'),
+  telegram: asset('footer7.png'),
+  whatsapp: asset('footer6.png'),
 }
 
 const companyLinks = [
@@ -167,17 +170,17 @@ const socialLinks = [
   {
     label: 'Telegram',
     href: 'https://t.me/',
-    icon: '/footer3.png',
+    icon: asset('footer3.png'),
   },
   {
     label: 'VK',
     href: 'https://vk.com/',
-    icon: '/footer2.png',
+    icon: asset('footer2.png'),
   },
   {
     label: 'YouTube',
     href: 'https://www.youtube.com/',
-    icon: '/footer1.png',
+    icon: asset('footer1.png'),
   },
 ]
 

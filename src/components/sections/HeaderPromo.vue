@@ -68,6 +68,9 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 const currentSlide = ref(0)
 let autoplayTimer = null
 
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
 const slides = [
   {
     id: 1,
@@ -75,7 +78,7 @@ const slides = [
     subtitle: 'БЕСПЛАТНАЯ ДОСТАВКА ПРИ ПОКУПКЕ<br>ОТ 25 000 РУБЛЕЙ',
     buttonText: 'КУПИТЬ СЕЙЧАС',
     note: 'При покупке принтера Bambu Lab',
-    image: '/carusel1.png',
+    image: asset('carusel1.png'),
     imageAlt: 'Промо изображение 1',
   },
   {
@@ -84,7 +87,7 @@ const slides = [
     subtitle: 'НАДЁЖНОЕ ОБОРУДОВАНИЕ И МАТЕРИАЛЫ<br>ДЛЯ БИЗНЕСА И ТВОРЧЕСТВА',
     buttonText: 'ПОДРОБНЕЕ',
     note: 'Специальные условия на популярные позиции',
-    image: '/carusel2.png',
+    image: asset('carusel2.png'),
     imageAlt: 'Промо изображение 2',
   },
   {
@@ -93,7 +96,7 @@ const slides = [
     subtitle: 'ПОДБОР ТЕХНИКИ И КОМПЛЕКТУЮЩИХ<br>ПОД ВАШИ ЗАДАЧИ',
     buttonText: 'В КАТАЛОГ',
     note: 'Актуальные предложения уточняйте у менеджера',
-    image: '/carusel3.png',
+    image: asset('carusel3.png'),
     imageAlt: 'Промо изображение 3',
   },
   {
@@ -102,7 +105,7 @@ const slides = [
     subtitle: 'ЛИЦЕНЗИИ, ПЛАГИНЫ И СЕРВИСЫ<br>ДЛЯ 3D-ПРОЕКТОВ',
     buttonText: 'СМОТРЕТЬ',
     note: 'Поддержка и консультации по подбору решений',
-    image: '/carusel4.png',
+    image: asset('carusel4.png'),
     imageAlt: 'Промо изображение 4',
   },
   {
@@ -111,7 +114,7 @@ const slides = [
     subtitle: 'ПОЛЕЗНЫЕ АКСЕССУАРЫ И ЗАПЧАСТИ<br>ДЛЯ СТАБИЛЬНОЙ РАБОТЫ',
     buttonText: 'ВЫБРАТЬ',
     note: 'Количество акционных товаров ограничено',
-    image: '/carusel5.png',
+    image: asset('carusel5.png'),
     imageAlt: 'Промо изображение 5',
   },
   {
@@ -120,7 +123,7 @@ const slides = [
     subtitle: 'ОТ БАЗОВЫХ РЕШЕНИЙ ДО ПРОФ-СЕГМЕНТА<br>В ОДНОМ МЕСТЕ',
     buttonText: 'ОТКРЫТЬ',
     note: 'Доступны индивидуальные предложения для юр. лиц',
-    image: '/carusel6.png',
+    image: asset('carusel6.png'),
     imageAlt: 'Промо изображение 6',
   },
 ]

@@ -35,7 +35,10 @@
 </template>
 
 <script setup>
-const backgroundImage = '/TelegramPromo1.png'
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
+const backgroundImage = asset('TelegramPromo1.png')
 const telegramLink = 'https://t.me/your_channel'
 </script>
 

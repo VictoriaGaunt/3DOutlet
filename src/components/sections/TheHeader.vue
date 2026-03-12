@@ -287,6 +287,9 @@ const modal = ref({
   description: '',
 })
 
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
 const contactDropdownRef = ref(null)
 const catalogDropdownRef = ref(null)
 const softwareDropdownRef = ref(null)
@@ -297,16 +300,16 @@ const cartCountText = computed(() => `${totalCount.value} шт.`)
 const cartPriceText = computed(() => `${formatPrice(totalPrice.value)} ₽`)
 
 const icons = {
-  geo: '/img9.png',
-  arrowUpRight: '/img8.png',
-  phone: '/img2.png',
-  chevronDown: '/img3.png',
-  user: '/img1.png',
-  logo: '/image.png',
-  search: '/img7.png',
-  heart: '/img6.png',
-  chart: '/img4.png',
-  cart: '/img5.png',
+  geo: asset('img9.png'),
+  arrowUpRight: asset('img8.png'),
+  phone: asset('img2.png'),
+  chevronDown: asset('img3.png'),
+  user: asset('img1.png'),
+  logo: asset('image.png'),
+  search: asset('img7.png'),
+  heart: asset('img6.png'),
+  chart: asset('img4.png'),
+  cart: asset('img5.png'),
 }
 
 const contactItems = [

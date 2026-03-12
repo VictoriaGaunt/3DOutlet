@@ -110,9 +110,12 @@ const currentSlide = ref(0)
 const isMobile = ref(false)
 let autoplayTimer = null
 
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
 const navIcons = {
-  prev: '/benefits6.png',
-  next: '/benefits7.png',
+  prev: asset('benefits6.png'),
+  next: asset('benefits7.png'),
 }
 
 const cards = [
@@ -127,7 +130,7 @@ const cards = [
       'Онлайн формирование счета',
     ],
     buttonText: 'УЗНАТЬ БОЛЬШЕ',
-    image: '/benefits1.png',
+    image: asset('benefits1.png'),
     imageAlt: 'Скидка 20 процентов',
     modalTitle: 'Работа с юридическими лицами',
     modalDescription:
@@ -139,7 +142,7 @@ const cards = [
     description:
         'Ответьте на несколько вопросов и получите подборку подходящих моделей с советами эксперта',
     buttonText: 'ПОДОБРАТЬ 3D ПРИНТЕР',
-    image: '/benefits2.png',
+    image: asset('benefits2.png'),
     imageAlt: '3D принтер',
     modalTitle: 'Подбор оборудования',
     modalDescription:
@@ -151,7 +154,7 @@ const cards = [
     description:
         'Помогаем с подбором, запуском, настройкой и сопровождением оборудования после покупки',
     buttonText: 'ПОДРОБНЕЕ',
-    image: '/benefits3.png',
+    image: asset('benefits3.png'),
     imageAlt: 'Сервис и поддержка',
     modalTitle: 'Сервис и поддержка',
     modalDescription:
@@ -163,7 +166,7 @@ const cards = [
     description:
         'Оперативно отправляем оборудование, расходники и комплектующие по всей России',
     buttonText: 'УСЛОВИЯ ДОСТАВКИ',
-    image: '/benefits4.png',
+    image: asset('benefits4.png'),
     imageAlt: 'Доставка по России',
     modalTitle: 'Доставка',
     modalDescription:
@@ -175,7 +178,7 @@ const cards = [
     description:
         'Полезные аксессуары и запчасти для стабильной работы оборудования',
     buttonText: 'ВЫБРАТЬ',
-    image: '/benefits5.png',
+    image: asset('benefits5.png'),
     imageAlt: 'Скидки на комплектующие',
     modalTitle: 'Скидки на комплектующие',
     modalDescription:

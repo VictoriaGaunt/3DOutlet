@@ -64,15 +64,18 @@ const modal = ref({
   description: '',
 })
 
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
 const icons = {
-  arrowUpRight: '/img8.png',
-  star: '/ProductCard3.png',
+  arrowUpRight: asset('img8.png'),
+  star: asset('ProductCard3.png'),
 }
 
 const testimonials = [
   {
     id: 1,
-    avatar: '/testimonials7.png',
+    avatar: asset('testimonials7.png'),
     name: 'Алексей Смирнов',
     role: 'Владелец мастерской',
     text: 'Заказывал 3D-принтер и расходники для небольшой мастерской. Помогли с подбором, быстро оформили заказ и всё пришло без проблем. Очень понравился подход и сопровождение.',
@@ -82,7 +85,7 @@ const testimonials = [
   },
   {
     id: 2,
-    avatar: '/testimonials8.png',
+    avatar: asset('testimonials8.png'),
     name: 'Екатерина Волкова',
     role: 'Дизайнер изделий',
     text: 'Покупала материалы и комплектующие для печати прототипов. Менеджер подробно объяснил разницу между вариантами пластика и помог выбрать подходящий. Очень довольна сервисом.',
@@ -92,7 +95,7 @@ const testimonials = [
   },
   {
     id: 3,
-    avatar: '/testimonials10.png',
+    avatar: asset('testimonials10.png'),
     name: 'Дмитрий Орлов',
     role: 'Технический специалист',
     text: 'Нужно было быстро подобрать оборудование под рабочие задачи компании. Получили консультацию, счёт и документы без лишней суеты. Отдельно отмечу удобную работу с юрлицами.',
@@ -102,7 +105,7 @@ const testimonials = [
   },
   {
     id: 4,
-    avatar: '/testimonials9.png',
+    avatar: asset('testimonials9.png'),
     name: 'Марина Лебедева',
     role: 'Предприниматель',
     text: 'Очень понравилось, что здесь не просто продают технику, а реально помогают разобраться, что именно нужно. После покупки ещё и подсказали по настройке. Это редкость.',

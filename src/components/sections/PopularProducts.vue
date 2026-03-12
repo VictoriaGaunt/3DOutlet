@@ -38,10 +38,13 @@ const modal = ref({
   description: '',
 })
 
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
 const page = ref(0)
 
 const icons = {
-  arrowUpRight: '/img8.png',
+  arrowUpRight: asset('img8.png'),
 }
 
 const products = [
@@ -53,7 +56,7 @@ const products = [
     rating: '4.6',
     reviews: '1890',
     badge: 'хит',
-    image: '/ProductCard1.png',
+    image: asset('ProductCard1.png'),
     printType: 'FDM',
     printArea: '256x256x256',
     price: 134000,
@@ -66,7 +69,7 @@ const products = [
     rating: '4.8',
     reviews: '1240',
     badge: 'хит',
-    image: '/ProductCard1.png',
+    image: asset('ProductCard1.png'),
     printType: 'FDM',
     printArea: '256x256x256',
     price: 189000,
@@ -79,7 +82,7 @@ const products = [
     rating: '4.9',
     reviews: '980',
     badge: 'топ',
-    image: '/ProductCard1.png',
+    image: asset('ProductCard1.png'),
     printType: 'FDM',
     printArea: '256x256x256',
     price: 259000,
@@ -92,7 +95,7 @@ const products = [
     rating: '4.7',
     reviews: '1560',
     badge: 'нов.',
-    image: '/ProductCard1.png',
+    image: asset('ProductCard1.png'),
     printType: 'FDM',
     printArea: '256x256x256',
     price: 159000,

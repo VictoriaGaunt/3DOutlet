@@ -105,12 +105,15 @@ const props = defineProps({
   },
 })
 
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
 defineEmits(['open'])
 
 const icons = {
-  star: '/ProductCard3.png',
-  reviews: '/ProductCard4.png',
-  cart: '/ProductCard2.png',
+  star: asset('ProductCard3.png'),
+  reviews: asset('ProductCard4.png'),
+  cart: asset('ProductCard2.png'),
 }
 
 const { addToCart, removeFromCart, getQty, formatPrice } = useCartStore()

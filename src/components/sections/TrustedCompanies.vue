@@ -27,42 +27,46 @@
 </template>
 
 <script setup>
+
+const base = import.meta.env.BASE_URL
+const asset = (name) => `${base}${name}`
+
 const companies = [
   {
     id: 1,
     name: 'Сколково',
     href: 'https://sk.ru/',
-    logo: '/testimonials1.png',
+    logo: asset('testimonials1.png'),
   },
   {
     id: 2,
     name: 'Яндекс',
     href: 'https://yandex.ru/',
-    logo: '/testimonials2.png',
+    logo: asset('testimonials2.png'),
   },
   {
     id: 3,
     name: 'Ozon Фармацевтика',
     href: 'https://www.ozonpharm.ru/',
-    logo: '/testimonials3.png',
+    logo: asset('testimonials3.png'),
   },
   {
     id: 4,
     name: 'Все Инструменты',
     href: 'https://www.vseinstrumenti.ru/',
-    logo: '/testimonials4.png',
+    logo: asset('testimonials4.png'),
   },
   {
     id: 5,
     name: 'ЭФКО',
     href: 'https://www.efko.ru/',
-    logo: '/testimonials5.png',
+    logo: asset('testimonials5.png'),
   },
   {
     id: 6,
     name: 'Автоваз',
     href: 'https://www.lada.ru/',
-    logo: '/testimonials6.png',
+    logo: asset('testimonials6.png'),
   },
 ]
 </script>
