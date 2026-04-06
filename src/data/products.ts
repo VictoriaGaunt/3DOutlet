@@ -1,0 +1,88 @@
+import type { Product } from '../types'
+
+const base = import.meta.env.BASE_URL
+
+const asset = (name: string): string => `${base}${name}`
+
+export const products: Product[] = [
+    {
+        id: 1,
+        category: '3D принтер',
+        title: 'BAMBU LAB A1 MINI (EU)',
+        level: 'начальный уровень',
+        rating: '4.6',
+        reviews: '1890',
+        badge: 'хит',
+        image: asset('ProductCard1.png'),
+        printType: 'FDM',
+        printArea: '256x256x256',
+        price: 134000,
+    },
+    {
+        id: 2,
+        category: '3D принтер',
+        title: 'BAMBU LAB P1S COMBO',
+        level: 'полупрофессиональный',
+        rating: '4.8',
+        reviews: '1240',
+        badge: 'хит',
+        image: asset('ProductCard1.png'),
+        printType: 'FDM',
+        printArea: '256x256x256',
+        price: 189000,
+    },
+    {
+        id: 3,
+        category: '3D принтер',
+        title: 'BAMBU LAB X1 CARBON',
+        level: 'профессиональный уровень',
+        rating: '4.9',
+        reviews: '980',
+        badge: 'топ',
+        image: asset('ProductCard1.png'),
+        printType: 'FDM',
+        printArea: '256x256x256',
+        price: 259000,
+    },
+    {
+        id: 4,
+        category: '3D принтер',
+        title: 'BAMBU LAB A1 COMBO',
+        level: 'дом и мастерская',
+        rating: '4.7',
+        reviews: '1560',
+        badge: 'нов.',
+        image: asset('ProductCard1.png'),
+        printType: 'FDM',
+        printArea: '256x256x256',
+        price: 159000,
+    },
+    {
+        id: 5,
+        category: '3D принтер',
+        title: 'BAMBU LAB P1P',
+        level: 'домашний и учебный',
+        rating: '4.5',
+        reviews: '870',
+        badge: 'хит',
+        image: asset('ProductCard1.png'),
+        printType: 'FDM',
+        printArea: '256x256x256',
+        price: 149000,
+    },
+    {
+        id: 6,
+        category: '3D принтер',
+        title: 'BAMBU LAB X1E',
+        level: 'инженерный уровень',
+        rating: '4.9',
+        reviews: '540',
+        badge: 'топ',
+        image: asset('ProductCard1.png'),
+        printType: 'FDM',
+        printArea: '256x256x256',
+        price: 329000,
+    },
+]
+
+export default products

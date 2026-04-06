@@ -10,7 +10,7 @@
           :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
       >
         <article
-            v-for="(slide, index) in slides"
+            v-for="slide in promoSlides"
             :key="slide.id"
             class="promo__slide"
         >
@@ -19,14 +19,15 @@
               <h2 class="promo__title" v-html="slide.title"></h2>
               <p class="promo__subtitle" v-html="slide.subtitle"></p>
 
-              <button
+              <AppButton
                   v-if="slide.buttonText"
-                  class="promo__button"
-                  type="button"
+                  variant="primary"
+                  size="lg"
+                  custom-class="promo__button"
                   @click="handleSlideButton(slide)"
               >
                 {{ slide.buttonText }}
-              </button>
+              </AppButton>
             </div>
 
             <div class="promo__image-wrap">
@@ -46,7 +47,7 @@
 
             <div class="promo__dots">
               <button
-                  v-for="(_, dotIndex) in slides"
+                  v-for="(_, dotIndex) in promoSlides"
                   :key="dotIndex"
                   class="promo__dot"
                   :class="{ 'promo__dot--active': currentSlide === dotIndex }"
@@ -59,104 +60,76 @@
         </article>
       </div>
     </div>
+
+    <AppModal
+        :is-open="modal.isOpen"
+        :title="modal.title"
+        :description="modal.description"
+        @close="closeModal"
+    />
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import AppButton from '@/components/ui/AppButton.vue'
+import AppModal from '@/components/ui/AppModal.vue'
+import { promoSlides } from '@/data/promoSlides'
+import type { PromoSlide } from '@/types'
 
-const currentSlide = ref(0)
-let autoplayTimer = null
-
-const base = import.meta.env.BASE_URL
-const asset = (name) => `${base}${name}`
-
-const slides = [
-  {
-    id: 1,
-    title: '1 КГ ПЛАСТИКА<br>В ПОДАРОК! <span class="promo-accent">*</span>',
-    subtitle: 'БЕСПЛАТНАЯ ДОСТАВКА ПРИ ПОКУПКЕ<br>ОТ 25 000 РУБЛЕЙ',
-    buttonText: 'КУПИТЬ СЕЙЧАС',
-    note: 'При покупке принтера Bambu Lab',
-    image: asset('carusel1.png'),
-    imageAlt: 'Промо изображение 1',
-  },
-  {
-    id: 2,
-    title: 'СОВРЕМЕННЫЕ<br>3D-РЕШЕНИЯ',
-    subtitle: 'НАДЁЖНОЕ ОБОРУДОВАНИЕ И МАТЕРИАЛЫ<br>ДЛЯ БИЗНЕСА И ТВОРЧЕСТВА',
-    buttonText: 'ПОДРОБНЕЕ',
-    note: 'Специальные условия на популярные позиции',
-    image: asset('carusel2.png'),
-    imageAlt: 'Промо изображение 2',
-  },
-  {
-    id: 3,
-    title: 'ПРОФЕССИОНАЛЬНОЕ<br>ОБОРУДОВАНИЕ',
-    subtitle: 'ПОДБОР ТЕХНИКИ И КОМПЛЕКТУЮЩИХ<br>ПОД ВАШИ ЗАДАЧИ',
-    buttonText: 'В КАТАЛОГ',
-    note: 'Актуальные предложения уточняйте у менеджера',
-    image: asset('carusel3.png'),
-    imageAlt: 'Промо изображение 3',
-  },
-  {
-    id: 4,
-    title: 'ПРОГРАММНОЕ<br>ОБЕСПЕЧЕНИЕ',
-    subtitle: 'ЛИЦЕНЗИИ, ПЛАГИНЫ И СЕРВИСЫ<br>ДЛЯ 3D-ПРОЕКТОВ',
-    buttonText: 'СМОТРЕТЬ',
-    note: 'Поддержка и консультации по подбору решений',
-    image: asset('carusel4.png'),
-    imageAlt: 'Промо изображение 4',
-  },
-  {
-    id: 5,
-    title: 'СКИДКИ НА<br>КОМПЛЕКТУЮЩИЕ',
-    subtitle: 'ПОЛЕЗНЫЕ АКСЕССУАРЫ И ЗАПЧАСТИ<br>ДЛЯ СТАБИЛЬНОЙ РАБОТЫ',
-    buttonText: 'ВЫБРАТЬ',
-    note: 'Количество акционных товаров ограничено',
-    image: asset('carusel5.png'),
-    imageAlt: 'Промо изображение 5',
-  },
-  {
-    id: 6,
-    title: 'ВСЁ ДЛЯ<br>3D-ПЕЧАТИ',
-    subtitle: 'ОТ БАЗОВЫХ РЕШЕНИЙ ДО ПРОФ-СЕГМЕНТА<br>В ОДНОМ МЕСТЕ',
-    buttonText: 'ОТКРЫТЬ',
-    note: 'Доступны индивидуальные предложения для юр. лиц',
-    image: asset('carusel6.png'),
-    imageAlt: 'Промо изображение 6',
-  },
-]
-
-function nextSlide() {
-  currentSlide.value = (currentSlide.value + 1) % slides.length
+interface ModalState {
+  isOpen: boolean
+  title: string
+  description: string
 }
 
-function goToSlide(index) {
+const currentSlide = ref(0)
+const modal = ref<ModalState>({
+  isOpen: false,
+  title: '',
+  description: '',
+})
+
+let autoplayTimer: number | null = null
+
+function nextSlide(): void {
+  currentSlide.value = (currentSlide.value + 1) % promoSlides.length
+}
+
+function goToSlide(index: number): void {
   currentSlide.value = index
   restartAutoplay()
 }
 
-function startAutoplay() {
+function startAutoplay(): void {
   stopAutoplay()
-  autoplayTimer = setInterval(() => {
+
+  autoplayTimer = window.setInterval(() => {
     nextSlide()
   }, 4500)
 }
 
-function stopAutoplay() {
-  if (autoplayTimer) {
-    clearInterval(autoplayTimer)
+function stopAutoplay(): void {
+  if (autoplayTimer !== null) {
+    window.clearInterval(autoplayTimer)
     autoplayTimer = null
   }
 }
 
-function restartAutoplay() {
+function restartAutoplay(): void {
   startAutoplay()
 }
 
-function handleSlideButton(slide) {
-  console.log('Клик по слайду:', slide.id, slide.title)
+function handleSlideButton(slide: PromoSlide): void {
+  modal.value = {
+    isOpen: true,
+    title: slide.buttonText ?? 'Подробнее',
+    description: `${slide.note}. Здесь позже будет переход по сценарию "${slide.buttonText ?? 'Подробнее'}".`,
+  }
+}
+
+function closeModal(): void {
+  modal.value.isOpen = false
 }
 
 onMounted(() => {
@@ -254,37 +227,13 @@ onBeforeUnmount(() => {
   hyphens: none;
 }
 
-.promo__button {
+:deep(.promo__button) {
   align-self: flex-start;
   width: fit-content;
   min-width: 154px;
   max-width: 100%;
-  height: 48px;
   margin-top: 28px;
-  padding: 0 22px;
-  border: 0;
-  border-radius: 12px;
-  background: #ff5b00;
-  color: #ffffff;
-  font-size: 15px;
-  line-height: 1;
-  font-weight: 600;
   white-space: nowrap;
-  cursor: pointer;
-  transition:
-      background-color 0.2s ease,
-      transform 0.15s ease,
-      box-shadow 0.2s ease;
-}
-
-.promo__button:hover {
-  background: #e65100;
-  box-shadow: 0 10px 20px rgba(255, 91, 0, 0.2);
-}
-
-.promo__button:active {
-  transform: translateY(1px) scale(0.98);
-  background: #d84a00;
 }
 
 .promo__image-wrap {
@@ -383,7 +332,7 @@ onBeforeUnmount(() => {
     margin-top: 16px;
   }
 
-  .promo__button {
+  :deep(.promo__button) {
     margin-top: 24px;
   }
 
@@ -422,9 +371,8 @@ onBeforeUnmount(() => {
     line-height: 1.1;
   }
 
-  .promo__button {
+  :deep(.promo__button) {
     min-width: 148px;
-    height: 46px;
     margin-top: 22px;
     font-size: 14px;
   }
@@ -466,9 +414,8 @@ onBeforeUnmount(() => {
     line-height: 1.12;
   }
 
-  .promo__button {
+  :deep(.promo__button) {
     min-width: 140px;
-    height: 44px;
     margin-top: 20px;
     padding: 0 18px;
     font-size: 13px;
