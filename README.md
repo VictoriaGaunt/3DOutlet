@@ -59,3 +59,87 @@ src/
 ├─ stores/
 ├─ types/
 └─ utils/
+````
+
+## Основные директории
+
+* `app/` — точка входа приложения и router
+* `pages/` — страницы приложения
+* `components/header/` — составной хедер
+* `components/sections/` — секции главной страницы
+* `components/ui/` — переиспользуемые UI-компоненты
+* `data/` — локальные данные проекта
+* `stores/` — простые store/composable-решения
+* `types/` — TypeScript-типы
+* `utils/` — вспомогательные функции
+
+## Установка и запуск
+
+### 1. Установить зависимости
+
+```bash
+npm install
+```
+
+### 2. Запустить локально
+
+```bash
+npm run dev
+```
+
+### 3. Проверить типы
+
+```bash
+npm run type-check
+```
+
+### 4. Собрать production build
+
+```bash
+npm run build
+```
+
+### 5. Предпросмотр production build
+
+```bash
+npm run preview
+```
+
+## Скрипты
+
+```json
+{
+  "dev": "vite",
+  "build": "vue-tsc --noEmit && vite build",
+  "preview": "vite preview",
+  "type-check": "vue-tsc --noEmit"
+}
+```
+
+## GitHub Pages
+
+Проект настроен под GitHub Pages через `base` в `vite.config.ts`:
+
+```ts
+base: '/3DOutlet/'
+```
+
+## Особенности реализации
+
+* проект переведен с JavaScript на TypeScript
+* удалены дублирующиеся старые компоненты
+* унифицирована структура секций и UI
+* заменены старые модалки на единый `AppModal`
+* проект приведён к более чистой компонентной структуре
+* сборка и `type-check` проходят успешно
+
+## Статус проекта
+
+Проект находится в состоянии **рабочего frontend MVP / portfolio case**.
+
+## Автор
+
+Victoria Gaunt
+
+```
+```
