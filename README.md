@@ -1,38 +1,61 @@
-# 3doutlet
+# 3DOutlet
 
-This template should help get you started developing with Vue 3 in Vite.
+Frontend-проект интернет-витрины для 3D-оборудования, расходников и комплектующих.  
+Проект выполнен на **Vue 3 + Vite + TypeScript** и адаптирован под деплой на **GitHub Pages**.
 
-## Recommended IDE Setup
+## Демо
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+После деплоя проект доступен по адресу:
 
-## Recommended Browser Setup
+`https://victoriagaunt.github.io/3DOutlet/`
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Стек
 
-## Customize configuration
+- Vue 3
+- Vite
+- TypeScript
+- Vue Router
+- @vueuse/motion
+- Tailwind CSS v4
+- PostCSS
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## Что реализовано
 
-## Project Setup
+- адаптивная главная страница
+- верхний хедер с desktop/mobile логикой
+- promo slider
+- блок категорий
+- блок преимуществ
+- популярные товары
+- секция «Почему нас выбирают»
+- отзывы
+- блок компаний-партнёров
+- telegram promo
+- footer
+- модальные окна для временных сценариев
+- базовая логика корзины
+- страницы:
+  - Home
+  - Catalog
+  - Product
+  - Cart
+  - 404
 
-```sh
-npm install
-```
+## Архитектура проекта
 
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+```text
+src/
+├─ api/
+├─ app/
+│  └─ router/
+├─ components/
+│  ├─ header/
+│  ├─ sections/
+│  └─ ui/
+├─ composables/
+├─ data/
+├─ pages/
+├─ shared/
+├─ stores/
+├─ types/
+└─ utils/
