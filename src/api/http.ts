@@ -19,8 +19,19 @@ export class HttpError extends Error {
     }
 }
 
+function getApiBaseUrl(): string {
+    const envBase = import.meta.env.VITE_API_BASE_URL?.trim()
+
+    if (!envBase) {
+        return window.location.origin
+    }
+
+    return envBase.replace(/\/+$/, '')
+}
+
 function buildUrl(path: string, query?: HttpQueryParams): string {
-    const url = new URL(path, window.location.origin)
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`
+    const url = new URL(normalizedPath, getApiBaseUrl())
 
     if (query) {
         Object.entries(query).forEach(([key, value]) => {
@@ -47,7 +58,10 @@ async function parseResponse<T>(response: Response): Promise<T> {
     return data as T
 }
 
-export async function http<T>(path: string, options: HttpRequestOptions = {}): Promise<T> {
+export async function http<T>(
+    path: string,
+    options: HttpRequestOptions = {},
+): Promise<T> {
     const { query, headers, ...rest } = options
 
     const response = await fetch(buildUrl(path, query), {

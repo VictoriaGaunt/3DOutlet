@@ -27,53 +27,22 @@
 </template>
 
 <script setup lang="ts">
-import { asset } from '@/utils/asset'
+import { onMounted, ref } from 'vue'
+import { companiesApi, type Company } from '@/api/companies.api'
 
-interface CompanyItem {
-  id: number
-  name: string
-  href: string
-  logo: string
+const companies = ref<Company[]>([])
+
+async function fetchCompanies(): Promise<void> {
+  try {
+    companies.value = await companiesApi.getCompanies()
+  } catch {
+    companies.value = []
+  }
 }
 
-const companies: CompanyItem[] = [
-  {
-    id: 1,
-    name: 'Сколково',
-    href: 'https://sk.ru/',
-    logo: asset('testimonials1.png'),
-  },
-  {
-    id: 2,
-    name: 'Яндекс',
-    href: 'https://yandex.ru/',
-    logo: asset('testimonials2.png'),
-  },
-  {
-    id: 3,
-    name: 'Ozon Фармацевтика',
-    href: 'https://www.ozonpharm.ru/',
-    logo: asset('testimonials3.png'),
-  },
-  {
-    id: 4,
-    name: 'Все Инструменты',
-    href: 'https://www.vseinstrumenti.ru/',
-    logo: asset('testimonials4.png'),
-  },
-  {
-    id: 5,
-    name: 'ЭФКО',
-    href: 'https://www.efko.ru/',
-    logo: asset('testimonials5.png'),
-  },
-  {
-    id: 6,
-    name: 'Автоваз',
-    href: 'https://www.lada.ru/',
-    logo: asset('testimonials6.png'),
-  },
-]
+onMounted(async () => {
+  await fetchCompanies()
+})
 </script>
 
 <style scoped>

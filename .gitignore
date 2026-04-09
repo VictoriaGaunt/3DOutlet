@@ -1,20 +1,34 @@
 # Logs
-logs
-*.log
+/logs/
+/*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
+# Dependencies
+/node_modules
+
+# Build output
+/dist
+/dist-ssr
+/coverage
+
+# Cache
+*.tsbuildinfo
+.eslintcache
+node_modules/.vite
+.vite
+
+# Local env files
 *.local
-.vscode
-# Editor directories and files
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -24,10 +38,6 @@ coverage
 *.sln
 *.sw?
 
-*.tsbuildinfo
-
-.eslintcache
-
 # Cypress
 /cypress/videos/
 /cypress/screenshots/
@@ -35,5 +45,5 @@ coverage
 # Vitest
 __screenshots__/
 
-# Vite
+# Vite temp files
 *.timestamp-*-*.mjs

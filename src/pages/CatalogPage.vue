@@ -17,9 +17,14 @@
               type="text"
               class="catalog-page__search"
               placeholder="Поиск по названию товара"
+              @input="handleSearchInput"
           />
 
-          <select v-model="selectedCategory" class="catalog-page__select">
+          <select
+              v-model="selectedCategory"
+              class="catalog-page__select"
+              @change="applyFilters"
+          >
             <option value="all">Все категории</option>
             <option
                 v-for="category in categoryOptions"
@@ -29,11 +34,30 @@
               {{ category }}
             </option>
           </select>
+
+          <select
+              v-model="selectedSort"
+              class="catalog-page__select"
+              @change="handleSortChange"
+          >
+            <option value="title-asc">По названию</option>
+            <option value="price-asc">По цене ↑</option>
+            <option value="price-desc">По цене ↓</option>
+            <option value="rating-desc">По рейтингу</option>
+          </select>
         </div>
 
-        <div v-if="filteredProducts.length > 0" class="catalog-page__grid">
+        <div v-if="isLoading" class="catalog-page__status">
+          Загрузка товаров...
+        </div>
+
+        <div v-else-if="error" class="catalog-page__status catalog-page__status--error">
+          {{ error }}
+        </div>
+
+        <div v-else-if="products.length > 0" class="catalog-page__grid">
           <article
-              v-for="product in filteredProducts"
+              v-for="product in products"
               :key="product.id"
               class="catalog-page__card"
           >
@@ -57,7 +81,7 @@
             </div>
 
             <div class="catalog-page__bottom">
-              <div class="catalog-page__price">{{ formatPrice(product.price) }}</div>
+              <div class="catalog-page__price">{{ formatPrice(product.price) }} ₽</div>
 
               <div class="catalog-page__actions">
                 <RouterLink
@@ -88,28 +112,78 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { products } from '@/data/products'
 import { useCart } from '@/composables/useCart'
+import { useProducts } from '@/composables/useProducts'
+import { products as mockProducts } from '@/data/products'
+import type { ProductFilterParams, ProductSortBy, SortOrder } from '@/types/product'
+
+type SortOption = 'title-asc' | 'price-asc' | 'price-desc' | 'rating-desc'
 
 const { add, formatPrice } = useCart()
+const { products, isLoading, error, fetchProducts } = useProducts()
 
 const search = ref('')
 const selectedCategory = ref('all')
+const selectedSort = ref<SortOption>('title-asc')
+
+let searchTimer: number | null = null
 
 const categoryOptions = computed(() => {
-  return Array.from(new Set(products.map((product) => product.category)))
+  return Array.from(new Set(mockProducts.map((product) => product.category)))
 })
 
-const filteredProducts = computed(() => {
-  return products.filter((product) => {
-    const matchesSearch = product.title.toLowerCase().includes(search.value.toLowerCase())
-    const matchesCategory =
-        selectedCategory.value === 'all' || product.category === selectedCategory.value
+function getSortConfig(value: SortOption): {
+  sortBy: ProductSortBy
+  order: SortOrder
+} {
+  if (value === 'price-asc') {
+    return { sortBy: 'price', order: 'asc' }
+  }
 
-    return matchesSearch && matchesCategory
-  })
+  if (value === 'price-desc') {
+    return { sortBy: 'price', order: 'desc' }
+  }
+
+  if (value === 'rating-desc') {
+    return { sortBy: 'rating', order: 'desc' }
+  }
+
+  return { sortBy: 'title', order: 'asc' }
+}
+
+async function applyFilters(): Promise<void> {
+  const sortConfig = getSortConfig(selectedSort.value)
+
+  const params: ProductFilterParams = {
+    page: 1,
+    limit: 12,
+    search: search.value,
+    category: selectedCategory.value,
+    sortBy: sortConfig.sortBy,
+    order: sortConfig.order,
+  }
+
+  await fetchProducts(params)
+}
+
+function handleSearchInput(): void {
+  if (searchTimer !== null) {
+    window.clearTimeout(searchTimer)
+  }
+
+  searchTimer = window.setTimeout(async () => {
+    await applyFilters()
+  }, 250)
+}
+
+async function handleSortChange(): Promise<void> {
+  await applyFilters()
+}
+
+onMounted(async () => {
+  await applyFilters()
 })
 </script>
 
@@ -171,6 +245,19 @@ const filteredProducts = computed(() => {
 
 .catalog-page__select {
   min-width: 220px;
+}
+
+.catalog-page__status,
+.catalog-page__empty {
+  padding: 28px;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #5d636b;
+  text-align: center;
+}
+
+.catalog-page__status--error {
+  color: #c0392b;
 }
 
 .catalog-page__grid {
@@ -287,14 +374,6 @@ const filteredProducts = computed(() => {
   background: #ff5b00;
   color: #ffffff;
   cursor: pointer;
-}
-
-.catalog-page__empty {
-  padding: 28px;
-  border-radius: 20px;
-  background: #ffffff;
-  color: #5d636b;
-  text-align: center;
 }
 
 @media (max-width: 980px) {

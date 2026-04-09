@@ -1,65 +1,68 @@
 <template>
   <main class="product-page">
+    <div class="product-page__backdrop" @click="handleClose"></div>
+
     <section class="product-page__content">
       <div class="product-page__container">
-        <div v-if="product" class="product-page__layout">
-          <div class="product-page__gallery">
-            <img
-                :src="product.image"
-                :alt="product.title"
-                class="product-page__image"
+        <div v-if="isLoading" class="product-page__status">
+          Загрузка товара...
+        </div>
+
+        <div v-else-if="error" class="product-page__status product-page__status--error">
+          {{ error }}
+        </div>
+
+        <div v-else-if="product" class="product-page__panel">
+          <button
+              type="button"
+              class="product-page__close"
+              aria-label="Закрыть"
+              @click="handleClose"
+          >
+            ×
+          </button>
+
+          <div class="product-page__layout">
+            <ProductGallery
+                :images="galleryImages"
+                :title="product.title"
             />
-          </div>
 
-          <div class="product-page__info">
-            <span class="product-page__category">{{ product.category }}</span>
+            <div class="product-page__info">
+              <ProductInfo
+                  :product="product"
+                  :description="productDescription"
+                  :included="includedItems"
+                  :formatted-price="formatPrice(product.price)"
+              />
 
-            <div class="product-page__title-row">
-              <h1 class="product-page__title">{{ product.title }}</h1>
-              <span v-if="product.badge" class="product-page__badge">{{ product.badge }}</span>
-            </div>
-
-            <p class="product-page__level">{{ product.level }}</p>
-
-            <div class="product-page__rating">
-              Рейтинг: {{ product.rating }} · Отзывы: {{ product.reviews }}
-            </div>
-
-            <div class="product-page__specs">
-              <div class="product-page__spec">
-                <span class="product-page__spec-label">Тип печати</span>
-                <span class="product-page__spec-value">{{ product.printType }}</span>
-              </div>
-
-              <div class="product-page__spec">
-                <span class="product-page__spec-label">Поле печати</span>
-                <span class="product-page__spec-value">{{ product.printArea }}</span>
-              </div>
-            </div>
-
-            <div class="product-page__price">{{ formatPrice(product.price) }}</div>
-
-            <div class="product-page__actions">
-              <button
-                  type="button"
-                  class="product-page__button"
-                  @click="add(product)"
-              >
-                В корзину
-              </button>
-
-              <RouterLink to="/catalog" class="product-page__link">
-                Назад в каталог
-              </RouterLink>
+              <ProductActions
+                  :in-cart-qty="inCartQty"
+                  :is-favorite="isFavorite"
+                  :is-compared="isCompared"
+                  @add-to-cart="handleAddToCart"
+                  @toggle-favorite="toggleFavorite"
+                  @toggle-compare="toggleCompare"
+                  @close="handleClose"
+              />
             </div>
           </div>
+
+          <RelatedProducts
+              :items="relatedProducts"
+              :format-price="formatPrice"
+          />
         </div>
 
         <div v-else class="product-page__not-found">
           <h1 class="product-page__not-found-title">Товар не найден</h1>
-          <RouterLink to="/catalog" class="product-page__link">
-            Перейти в каталог
-          </RouterLink>
+          <button
+              type="button"
+              class="product-page__back-button"
+              @click="handleClose"
+          >
+            Назад
+          </button>
         </div>
       </div>
     </section>
@@ -67,28 +70,214 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
-import { products } from '@/data/products'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import ProductGallery from '@/components/product/ProductGallery.vue'
+import ProductInfo from '@/components/product/ProductInfo.vue'
+import ProductActions from '@/components/product/ProductActions.vue'
+import RelatedProducts from '@/components/product/RelatedProducts.vue'
+import { useProducts } from '@/composables/useProducts'
 import { useCart } from '@/composables/useCart'
+import type { Product } from '@/types'
 
-const route = useRoute()
-const { add, formatPrice } = useCart()
+interface Props {
+  id: number
+}
 
-const productId = computed<number>(() => Number(route.params.id))
-const product = computed(() => {
-  return products.find((item) => item.id === productId.value) ?? null
+const props = defineProps<Props>()
+
+const FAVORITES_STORAGE_KEY = '3doutlet-favorites'
+const COMPARE_STORAGE_KEY = '3doutlet-compare'
+
+const router = useRouter()
+
+const {
+  selectedProduct,
+  products,
+  isLoading,
+  error,
+  fetchProductById,
+  fetchProducts,
+} = useProducts()
+const { add, getQty, formatPrice } = useCart()
+
+const favoriteIds = ref<number[]>([])
+const compareIds = ref<number[]>([])
+
+const product = computed<Product | null>(() => selectedProduct.value)
+
+const galleryImages = computed<string[]>(() => {
+  if (!product.value) return []
+  return product.value.images?.length ? product.value.images : [product.value.image]
 })
+
+const productDescription = computed<string>(() => {
+  if (!product.value) return ''
+
+  if (product.value.description) {
+    return product.value.description
+  }
+
+  return `${product.value.title} — решение для задач 3D-печати и прототипирования. Подходит для сценариев "${product.value.level}", поддерживает технологию ${product.value.printType} и рабочую область ${product.value.printArea}.`
+})
+
+const includedItems = computed<string[]>(() => {
+  if (!product.value) return []
+
+  if (product.value.included?.length) {
+    return product.value.included
+  }
+
+  return [
+    product.value.title,
+    'Базовый комплект для запуска',
+    'Кабель питания и документация',
+  ]
+})
+
+const inCartQty = computed<number>(() => {
+  if (!product.value) return 0
+  return getQty(product.value.id)
+})
+
+const isFavorite = computed<boolean>(() => {
+  if (!product.value) return false
+  return favoriteIds.value.includes(product.value.id)
+})
+
+const isCompared = computed<boolean>(() => {
+  if (!product.value) return false
+  return compareIds.value.includes(product.value.id)
+})
+
+const relatedProducts = computed<Product[]>(() => {
+  if (!product.value) return []
+
+  return products.value
+      .filter((item) => item.id !== product.value?.id)
+      .slice(0, 4)
+})
+
+function readStoredIds(key: string): number[] {
+  if (typeof window === 'undefined') return []
+
+  try {
+    const raw = window.localStorage.getItem(key)
+    if (!raw) return []
+
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed.filter((item): item is number => typeof item === 'number')
+  } catch {
+    return []
+  }
+}
+
+function writeStoredIds(key: string, ids: number[]): void {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.localStorage.setItem(key, JSON.stringify(ids))
+  } catch {
+    // ignore
+  }
+}
+
+function loadStorageState(): void {
+  favoriteIds.value = readStoredIds(FAVORITES_STORAGE_KEY)
+  compareIds.value = readStoredIds(COMPARE_STORAGE_KEY)
+}
+
+function toggleFavorite(): void {
+  if (!product.value) return
+
+  const id = product.value.id
+
+  favoriteIds.value = favoriteIds.value.includes(id)
+      ? favoriteIds.value.filter((item) => item !== id)
+      : [...favoriteIds.value, id]
+
+  writeStoredIds(FAVORITES_STORAGE_KEY, favoriteIds.value)
+}
+
+function toggleCompare(): void {
+  if (!product.value) return
+
+  const id = product.value.id
+
+  compareIds.value = compareIds.value.includes(id)
+      ? compareIds.value.filter((item) => item !== id)
+      : [...compareIds.value, id]
+
+  writeStoredIds(COMPARE_STORAGE_KEY, compareIds.value)
+}
+
+function handleAddToCart(): void {
+  if (!product.value) return
+  add(product.value)
+}
+
+function handleClose(): void {
+  if (window.history.length > 1) {
+    router.back()
+    return
+  }
+
+  router.push('/catalog')
+}
+
+async function loadProductPage(id: number): Promise<void> {
+  if (!id || Number.isNaN(id)) {
+    return
+  }
+
+  await fetchProductById(id)
+
+  if (selectedProduct.value) {
+    await fetchProducts({
+      page: 1,
+      limit: 5,
+      category: selectedProduct.value.category,
+      sortBy: 'rating',
+      order: 'desc',
+    })
+  }
+}
+
+onMounted(async () => {
+  loadStorageState()
+  await loadProductPage(props.id)
+})
+
+watch(
+    () => props.id,
+    async (nextId) => {
+      await loadProductPage(nextId)
+    },
+)
 </script>
 
 <style scoped>
 .product-page {
-  min-height: 100vh;
-  background: #f3f3f3;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+
+.product-page__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.44);
+  backdrop-filter: blur(3px);
 }
 
 .product-page__content {
-  padding: 32px 20px;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 28px 20px;
+  overflow-y: auto;
 }
 
 .product-page__container {
@@ -96,143 +285,41 @@ const product = computed(() => {
   margin: 0 auto;
 }
 
-.product-page__layout {
-  display: grid;
-  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
-  gap: 24px;
+.product-page__panel {
+  position: relative;
   padding: 24px;
   border-radius: 28px;
   background: #ffffff;
   border: 1px solid rgba(17, 17, 17, 0.06);
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.16);
 }
 
-.product-page__gallery {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 420px;
-  border-radius: 24px;
-  background: #f8f8f8;
-}
-
-.product-page__image {
-  width: 100%;
-  max-width: 420px;
-  height: 360px;
-  object-fit: contain;
-}
-
-.product-page__category {
-  color: #7b8189;
-  font-size: 14px;
-}
-
-.product-page__title-row {
-  margin-top: 10px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.product-page__title {
-  margin: 0;
-  color: #1d232b;
-  font-size: clamp(28px, 3vw, 48px);
-  line-height: 1.02;
-  font-weight: 800;
-}
-
-.product-page__badge {
-  min-width: 40px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: #e7f4ff;
-  color: #1683c7;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-.product-page__level {
-  margin: 12px 0 0;
-  color: #636a73;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.product-page__rating {
-  margin-top: 16px;
-  color: #1d232b;
-  font-size: 15px;
-}
-
-.product-page__specs {
-  margin-top: 20px;
-  display: grid;
-  gap: 12px;
-}
-
-.product-page__spec {
-  display: grid;
-  gap: 4px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: #f8f8f8;
-}
-
-.product-page__spec-label {
-  color: #7b8189;
-  font-size: 13px;
-}
-
-.product-page__spec-value {
-  color: #1d232b;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.product-page__price {
-  margin-top: 24px;
-  color: #1d232b;
-  font-size: 34px;
-  font-weight: 800;
-}
-
-.product-page__actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 18px;
-  flex-wrap: wrap;
-}
-
-.product-page__button,
-.product-page__link {
-  min-height: 44px;
-  padding: 0 18px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
-.product-page__button {
+.product-page__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
   border: 0;
-  background: #ff5b00;
-  color: #ffffff;
+  border-radius: 12px;
+  background: #f3f4f6;
+  color: #1d232b;
+  font-size: 24px;
+  line-height: 1;
   cursor: pointer;
 }
 
-.product-page__link {
-  border: 1px solid #d8d8dd;
-  background: #ffffff;
-  color: #1d232b;
+.product-page__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+  gap: 24px;
 }
 
+.product-page__info {
+  min-width: 0;
+}
+
+.product-page__status,
 .product-page__not-found {
   padding: 40px;
   border-radius: 24px;
@@ -240,11 +327,27 @@ const product = computed(() => {
   text-align: center;
 }
 
+.product-page__status--error {
+  color: #c0392b;
+}
+
 .product-page__not-found-title {
   margin: 0 0 18px;
   color: #1d232b;
   font-size: 30px;
   font-weight: 800;
+}
+
+.product-page__back-button {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid #d8d8dd;
+  background: #ffffff;
+  color: #1d232b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 @media (max-width: 900px) {
@@ -255,21 +358,12 @@ const product = computed(() => {
 
 @media (max-width: 640px) {
   .product-page__content {
-    padding-left: 14px;
-    padding-right: 14px;
+    padding: 16px 14px;
   }
 
-  .product-page__layout {
+  .product-page__panel {
     padding: 16px;
     border-radius: 20px;
-  }
-
-  .product-page__gallery {
-    min-height: 280px;
-  }
-
-  .product-page__image {
-    height: 240px;
   }
 }
 </style>

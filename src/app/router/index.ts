@@ -3,6 +3,8 @@ import HomePage from '@/pages/HomePage.vue'
 import CatalogPage from '@/pages/CatalogPage.vue'
 import ProductPage from '@/pages/ProductPage.vue'
 import CartPage from '@/pages/CartPage.vue'
+import FavoritesPage from '@/pages/FavoritesPage.vue'
+import ComparePage from '@/pages/ComparePage.vue'
 import NotFoundPage from '@/pages/NotFoundPage.vue'
 
 const router = createRouter({
@@ -22,6 +24,12 @@ const router = createRouter({
             path: '/product/:id',
             name: 'product',
             component: ProductPage,
+            props: (route) => ({
+                id: Number(route.params.id),
+            }),
+            meta: {
+                overlay: true,
+            },
         },
         {
             path: '/cart',
@@ -29,12 +37,22 @@ const router = createRouter({
             component: CartPage,
         },
         {
+            path: '/favorites',
+            name: 'favorites',
+            component: FavoritesPage,
+        },
+        {
+            path: '/compare',
+            name: 'compare',
+            component: ComparePage,
+        },
+        {
             path: '/:pathMatch(.*)*',
             name: 'not-found',
             component: NotFoundPage,
         },
     ],
-    scrollBehavior(to, _from, savedPosition) {
+    scrollBehavior(to, from, savedPosition) {
         if (savedPosition) {
             return savedPosition
         }
@@ -44,6 +62,14 @@ const router = createRouter({
                 el: to.hash,
                 behavior: 'smooth',
             }
+        }
+
+        const opensOverlay =
+            to.meta.overlay === true &&
+            (from.name === 'catalog' || from.name === 'home')
+
+        if (opensOverlay) {
+            return false
         }
 
         return {

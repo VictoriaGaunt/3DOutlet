@@ -11,7 +11,7 @@
       <div class="testimonials__box">
         <div class="testimonials__grid">
           <article
-              v-for="item in testimonials"
+              v-for="item in viewTestimonials"
               :key="item.id"
               class="testimonials__card"
               @click="openModal(item)"
@@ -54,68 +54,58 @@
   </section>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import AppModal from '@/components/ui/AppModal.vue'
+import { testimonialsApi, type Testimonial } from '@/api/testimonials.api'
+import { asset } from '@/utils/asset'
 
-const modal = ref({
+interface ModalState {
+  isOpen: boolean
+  title: string
+  description: string
+}
+
+interface TestimonialCard extends Testimonial {
+  avatar: string
+  modalTitle: string
+  modalDescription: string
+}
+
+const modal = ref<ModalState>({
   isOpen: false,
   title: '',
   description: '',
 })
 
-const base = import.meta.env.BASE_URL
-const asset = (name) => `${base}${name}`
+const testimonials = ref<Testimonial[]>([])
 
 const icons = {
   arrowUpRight: asset('img8.png'),
   star: asset('ProductCard3.png'),
 }
 
-const testimonials = [
-  {
-    id: 1,
-    avatar: asset('testimonials7.png'),
-    name: 'Алексей Смирнов',
-    role: 'Владелец мастерской',
-    text: 'Заказывал 3D-принтер и расходники для небольшой мастерской. Помогли с подбором, быстро оформили заказ и всё пришло без проблем. Очень понравился подход и сопровождение.',
-    modalTitle: 'Отзыв Алексея Смирнова',
-    modalDescription:
-        'Клиент отмечает помощь в подборе оборудования, быструю доставку и качественное сопровождение на всех этапах покупки.',
-  },
-  {
-    id: 2,
-    avatar: asset('testimonials8.png'),
-    name: 'Екатерина Волкова',
-    role: 'Дизайнер изделий',
-    text: 'Покупала материалы и комплектующие для печати прототипов. Менеджер подробно объяснил разницу между вариантами пластика и помог выбрать подходящий. Очень довольна сервисом.',
-    modalTitle: 'Отзыв Екатерины Волковой',
-    modalDescription:
-        'Клиентке помогли выбрать подходящие материалы и комплектующие под задачи прототипирования.',
-  },
-  {
-    id: 3,
-    avatar: asset('testimonials10.png'),
-    name: 'Дмитрий Орлов',
-    role: 'Технический специалист',
-    text: 'Нужно было быстро подобрать оборудование под рабочие задачи компании. Получили консультацию, счёт и документы без лишней суеты. Отдельно отмечу удобную работу с юрлицами.',
-    modalTitle: 'Отзыв Дмитрия Орлова',
-    modalDescription:
-        'Клиент оценил удобство работы с юридическими лицами, скорость оформления и качество консультации.',
-  },
-  {
-    id: 4,
-    avatar: asset('testimonials9.png'),
-    name: 'Марина Лебедева',
-    role: 'Предприниматель',
-    text: 'Очень понравилось, что здесь не просто продают технику, а реально помогают разобраться, что именно нужно. После покупки ещё и подсказали по настройке. Это редкость.',
-    modalTitle: 'Отзыв Марины Лебедевой',
-    modalDescription:
-        'Клиентка положительно оценила помощь в подборе оборудования и поддержку после покупки.',
-  },
+const avatarPool = [
+  asset('testimonials7.png'),
+  asset('testimonials8.png'),
+  asset('testimonials10.png'),
+  asset('testimonials9.png'),
 ]
 
-function openModal(item) {
+const viewTestimonials = computed<TestimonialCard[]>(() => {
+  return testimonials.value.map((item, index) => ({
+    ...item,
+    role: item.role ?? item.company ?? 'Клиент 3DOutlet',
+    avatar: avatarPool[index % avatarPool.length],
+    modalTitle: `Отзыв ${item.name}`,
+    modalDescription:
+        item.text.length > 160
+            ? item.text
+            : `${item.text} Клиент положительно оценивает качество сервиса и взаимодействия.`,
+  }))
+})
+
+function openModal(item: TestimonialCard): void {
   modal.value = {
     isOpen: true,
     title: item.modalTitle,
@@ -123,9 +113,21 @@ function openModal(item) {
   }
 }
 
-function closeModal() {
+function closeModal(): void {
   modal.value.isOpen = false
 }
+
+async function fetchTestimonials(): Promise<void> {
+  try {
+    testimonials.value = await testimonialsApi.getTestimonials()
+  } catch {
+    testimonials.value = []
+  }
+}
+
+onMounted(async () => {
+  await fetchTestimonials()
+})
 </script>
 
 <style scoped>

@@ -1,7 +1,17 @@
 <template>
   <transition name="menu-fade">
-    <div v-if="isOpen" class="mobile-menu">
-      <nav class="mobile-menu__nav">
+    <div
+        v-if="isOpen"
+        :id="menuId"
+        ref="menuRef"
+        class="mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Мобильное меню"
+        tabindex="-1"
+        @keydown.esc.prevent="$emit('close')"
+    >
+      <nav class="mobile-menu__nav" aria-label="Мобильная навигация">
         <button
             class="mobile-menu__link"
             type="button"
@@ -39,6 +49,7 @@
         <button
             class="mobile-menu__auth-btn"
             type="button"
+            aria-label="Открыть вход"
             @click="$emit('open-modal', 'Вход', 'Здесь позже будет форма входа.')"
         >
           <img :src="icons.user" alt="" aria-hidden="true" class="mobile-menu__auth-icon" />
@@ -48,6 +59,7 @@
         <button
             class="mobile-menu__auth-btn"
             type="button"
+            aria-label="Открыть регистрацию"
             @click="$emit('open-modal', 'Регистрация', 'Здесь позже будет форма регистрации.')"
         >
           <span>Регистрация</span>
@@ -55,7 +67,12 @@
       </div>
 
       <div class="mobile-menu__cart-panel">
-        <button class="mobile-menu__cart-btn" type="button" @click="$emit('open-cart')">
+        <button
+            class="mobile-menu__cart-btn"
+            type="button"
+            :aria-label="`Открыть корзину, ${cartCountText}, ${cartPriceText}`"
+            @click="$emit('open-cart')"
+        >
           <img :src="icons.cart" alt="" aria-hidden="true" class="mobile-menu__auth-icon" />
           <span>Корзина</span>
           <span class="mobile-menu__cart-text">{{ cartCountText }}</span>
@@ -67,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { asset } from '@/utils/asset'
 
 interface Props {
@@ -75,15 +92,20 @@ interface Props {
   totalCount: number
   totalPrice: number
   formatPrice: (value: number) => string
+  menuId?: string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  menuId: 'mobile-menu',
+})
 
 defineEmits<{
   (e: 'close'): void
   (e: 'open-modal', title: string, description: string): void
   (e: 'open-cart'): void
 }>()
+
+const menuRef = ref<HTMLElement | null>(null)
 
 const icons = {
   user: asset('img1.png'),
@@ -92,6 +114,15 @@ const icons = {
 
 const cartCountText = computed(() => `${props.totalCount} шт.`)
 const cartPriceText = computed(() => `${props.formatPrice(props.totalPrice)} ₽`)
+
+watch(
+    () => props.isOpen,
+    async (isOpen) => {
+      if (!isOpen) return
+      await nextTick()
+      menuRef.value?.focus()
+    },
+)
 </script>
 
 <style scoped>
@@ -124,6 +155,14 @@ const cartPriceText = computed(() => `${props.formatPrice(props.totalPrice)} ₽
     border-top: 1px solid #e6e6e6;
   }
 
+  .mobile-menu:focus-visible,
+  .mobile-menu__link:focus-visible,
+  .mobile-menu__auth-btn:focus-visible,
+  .mobile-menu__cart-btn:focus-visible {
+    outline: 2px solid #ff5b00;
+    outline-offset: 2px;
+  }
+
   .mobile-menu__nav {
     display: flex;
     flex-direction: column;
@@ -146,9 +185,10 @@ const cartPriceText = computed(() => `${props.formatPrice(props.totalPrice)} ₽
     transition: color 0.2s ease, background-color 0.2s ease;
   }
 
-  .mobile-menu__link:hover {
-    color: #f07f17;
-    background: rgba(240, 127, 23, 0.05);
+  .mobile-menu__link:hover,
+  .mobile-menu__link:focus-visible {
+    color: #d45500;
+    background: rgba(240, 127, 23, 0.08);
   }
 
   .mobile-menu__auth {
@@ -178,8 +218,9 @@ const cartPriceText = computed(() => `${props.formatPrice(props.totalPrice)} ₽
         transform 0.15s ease;
   }
 
-  .mobile-menu__auth-btn:hover {
-    background: #f07f17;
+  .mobile-menu__auth-btn:hover,
+  .mobile-menu__auth-btn:focus-visible {
+    background: #d45500;
     color: #ffffff;
   }
 
@@ -219,8 +260,9 @@ const cartPriceText = computed(() => `${props.formatPrice(props.totalPrice)} ₽
         transform 0.15s ease;
   }
 
-  .mobile-menu__cart-btn:hover {
-    background: #f07f17;
+  .mobile-menu__cart-btn:hover,
+  .mobile-menu__cart-btn:focus-visible {
+    background: #d45500;
     color: #ffffff;
   }
 

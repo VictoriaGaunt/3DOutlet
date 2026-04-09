@@ -1,6 +1,6 @@
 import { computed } from 'vue'
-import { useProductsStore } from '../stores/products.store'
-import type { Product, ProductFilterParams } from '../types'
+import { useProductsStore } from '@/stores/products.store'
+import type { Product, ProductFilterParams } from '@/types'
 
 export function useProducts() {
     const productsStore = useProductsStore()
@@ -18,7 +18,9 @@ export function useProducts() {
     const isEmpty = computed(() => productsStore.isEmpty.value)
     const totalPages = computed(() => productsStore.totalPages.value)
 
-    async function fetchProducts(filtersValue: ProductFilterParams = {}): Promise<void> {
+    async function fetchProducts(
+        filtersValue: ProductFilterParams = {},
+    ): Promise<void> {
         await productsStore.fetchProducts(filtersValue)
     }
 

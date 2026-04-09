@@ -51,9 +51,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import AppModal from '@/components/ui/AppModal.vue'
-import { categories as categoryList } from '@/data/categories'
+import { categoriesApi } from '@/api/categories.api'
 import { asset } from '@/utils/asset'
 import type { Category } from '@/types'
 
@@ -68,6 +68,8 @@ const modal = ref<ModalState>({
   title: '',
   description: '',
 })
+
+const categoryList = ref<Category[]>([])
 
 const icons = {
   arrowUpRight: asset('categories1.png'),
@@ -84,6 +86,18 @@ function openCategoryModal(item: Category): void {
 function closeModal(): void {
   modal.value.isOpen = false
 }
+
+async function fetchCategories(): Promise<void> {
+  try {
+    categoryList.value = await categoriesApi.getCategories()
+  } catch {
+    categoryList.value = []
+  }
+}
+
+onMounted(async () => {
+  await fetchCategories()
+})
 </script>
 
 <style scoped>

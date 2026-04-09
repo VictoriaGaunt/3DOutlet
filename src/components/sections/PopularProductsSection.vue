@@ -28,10 +28,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import ProductCard from '../ui/ProductCard.vue'
+import { computed, onMounted, ref } from 'vue'
+import ProductCard from '@/components/ui/ProductCard.vue'
 import AppModal from '@/components/ui/AppModal.vue'
-import { products } from '@/data/products'
+import { useProducts } from '@/composables/useProducts'
 import { asset } from '@/utils/asset'
 import type { Product } from '@/types'
 
@@ -47,15 +47,13 @@ const modal = ref<ModalState>({
   description: '',
 })
 
-const page = ref(0)
-
 const icons = {
   arrowUpRight: asset('img8.png'),
 }
 
-const visibleProducts = computed(() => {
-  return products.slice(page.value * 4, page.value * 4 + 4)
-})
+const { products, fetchProducts } = useProducts()
+
+const visibleProducts = computed(() => products.value.slice(0, 4))
 
 function openProductModal(product: Product): void {
   modal.value = {
@@ -68,6 +66,15 @@ function openProductModal(product: Product): void {
 function closeModal(): void {
   modal.value.isOpen = false
 }
+
+onMounted(async () => {
+  await fetchProducts({
+    page: 1,
+    limit: 4,
+    sortBy: 'title',
+    order: 'asc',
+  })
+})
 </script>
 
 <style scoped>

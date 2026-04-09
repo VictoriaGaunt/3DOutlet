@@ -1,6 +1,6 @@
 import { computed, reactive } from 'vue'
-import type { Product, ProductFilterParams } from '../types'
-import { productsApi } from '../api/products.api'
+import type { Product, ProductFilterParams } from '@/types'
+import { productsApi } from '@/api/products.api'
 
 interface ProductsState {
     items: Product[]
@@ -13,15 +13,26 @@ interface ProductsState {
     filters: ProductFilterParams
 }
 
+const defaultFilters: ProductFilterParams = {
+    page: 1,
+    limit: 12,
+    category: 'all',
+    search: '',
+    sortBy: 'title',
+    order: 'asc',
+    minPrice: undefined,
+    maxPrice: undefined,
+}
+
 const productsState = reactive<ProductsState>({
     items: [],
     selectedProduct: null,
     isLoading: false,
     error: null,
     total: 0,
-    page: 1,
-    limit: 10,
-    filters: {},
+    page: defaultFilters.page ?? 1,
+    limit: defaultFilters.limit ?? 12,
+    filters: { ...defaultFilters },
 })
 
 function setLoading(value: boolean): void {
@@ -40,7 +51,7 @@ function setFilters(filters: Partial<ProductFilterParams>): void {
 }
 
 function resetFilters(): void {
-    productsState.filters = {}
+    productsState.filters = { ...defaultFilters }
 }
 
 async function fetchProducts(filters: ProductFilterParams = {}): Promise<void> {
@@ -57,8 +68,11 @@ async function fetchProducts(filters: ProductFilterParams = {}): Promise<void> {
         productsState.page = response.page
         productsState.limit = response.limit
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Не удалось загрузить товары'
+        const message =
+            error instanceof Error ? error.message : 'Не удалось загрузить товары'
         setError(message)
+        productsState.items = []
+        productsState.total = 0
     } finally {
         setLoading(false)
     }
@@ -68,12 +82,15 @@ async function fetchProductById(id: Product['id']): Promise<void> {
     try {
         setLoading(true)
         setError(null)
+        productsState.selectedProduct = null
 
         const product = await productsApi.getProductById(id)
         productsState.selectedProduct = product
     } catch (error) {
-        const message = error instanceof Error ? error.message : 'Не удалось загрузить товар'
+        const message =
+            error instanceof Error ? error.message : 'Не удалось загрузить товар'
         setError(message)
+        productsState.selectedProduct = null
     } finally {
         setLoading(false)
     }

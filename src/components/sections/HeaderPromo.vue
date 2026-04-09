@@ -10,7 +10,7 @@
           :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
       >
         <article
-            v-for="slide in promoSlides"
+            v-for="slide in slides"
             :key="slide.id"
             class="promo__slide"
         >
@@ -47,7 +47,7 @@
 
             <div class="promo__dots">
               <button
-                  v-for="(_, dotIndex) in promoSlides"
+                  v-for="(_, dotIndex) in slides"
                   :key="dotIndex"
                   class="promo__dot"
                   :class="{ 'promo__dot--active': currentSlide === dotIndex }"
@@ -74,7 +74,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppModal from '@/components/ui/AppModal.vue'
-import { promoSlides } from '@/data/promoSlides'
+import { promoApi } from '@/api/promo.api'
 import type { PromoSlide } from '@/types'
 
 interface ModalState {
@@ -84,6 +84,7 @@ interface ModalState {
 }
 
 const currentSlide = ref(0)
+const slides = ref<PromoSlide[]>([])
 const modal = ref<ModalState>({
   isOpen: false,
   title: '',
@@ -93,7 +94,8 @@ const modal = ref<ModalState>({
 let autoplayTimer: number | null = null
 
 function nextSlide(): void {
-  currentSlide.value = (currentSlide.value + 1) % promoSlides.length
+  if (slides.value.length === 0) return
+  currentSlide.value = (currentSlide.value + 1) % slides.value.length
 }
 
 function goToSlide(index: number): void {
@@ -103,6 +105,8 @@ function goToSlide(index: number): void {
 
 function startAutoplay(): void {
   stopAutoplay()
+
+  if (slides.value.length <= 1) return
 
   autoplayTimer = window.setInterval(() => {
     nextSlide()
@@ -132,8 +136,19 @@ function closeModal(): void {
   modal.value.isOpen = false
 }
 
-onMounted(() => {
-  startAutoplay()
+async function fetchSlides(): Promise<void> {
+  try {
+    slides.value = await promoApi.getPromoSlides()
+    currentSlide.value = 0
+    startAutoplay()
+  } catch {
+    slides.value = []
+    stopAutoplay()
+  }
+}
+
+onMounted(async () => {
+  await fetchSlides()
 })
 
 onBeforeUnmount(() => {

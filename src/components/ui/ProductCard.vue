@@ -5,13 +5,35 @@
         <span class="product-card__category">{{ product.category }}</span>
 
         <div class="product-card__stats">
-          <span class="product-card__rating">
-            <img :src="icons.star" alt="rating" class="product-card__stat-icon" />
+          <button
+              type="button"
+              class="product-card__action-icon"
+              :class="{ 'is-active': isFavorite }"
+              :aria-label="isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'"
+              :aria-pressed="isFavorite ? 'true' : 'false'"
+              @click.stop="toggleFavorite(product)"
+          >
+            <img :src="icons.heart" alt="" aria-hidden="true" class="product-card__stat-icon" />
+          </button>
+
+          <button
+              type="button"
+              class="product-card__action-icon"
+              :class="{ 'is-active': isCompared }"
+              :aria-label="isCompared ? 'Убрать из сравнения' : 'Добавить в сравнение'"
+              :aria-pressed="isCompared ? 'true' : 'false'"
+              @click.stop="toggleCompare(product)"
+          >
+            <img :src="icons.compare" alt="" aria-hidden="true" class="product-card__stat-icon" />
+          </button>
+
+          <span class="product-card__rating" :aria-label="`Рейтинг ${product.rating}`">
+            <img :src="icons.star" alt="" aria-hidden="true" class="product-card__stat-icon" />
             {{ product.rating }}
           </span>
 
-          <span class="product-card__reviews">
-            <img :src="icons.reviews" alt="reviews" class="product-card__stat-icon" />
+          <span class="product-card__reviews" :aria-label="`Отзывы ${product.reviews}`">
+            <img :src="icons.reviews" alt="" aria-hidden="true" class="product-card__stat-icon" />
             {{ product.reviews }}
           </span>
         </div>
@@ -34,7 +56,7 @@
     <button
         class="product-card__image-wrap"
         type="button"
-        :aria-label="product.title"
+        :aria-label="`Открыть карточку товара ${product.title}`"
         @click="emit('open', product)"
     >
       <img :src="product.image" :alt="product.title" class="product-card__image" />
@@ -58,21 +80,22 @@
           variant="primary"
           block
           custom-class="product-card__buy-btn"
+          :aria-label="`Добавить ${product.title} в корзину за ${formattedPrice} ₽`"
           @click="handleAdd"
       >
         <span class="product-card__buy-left">
-          <img :src="icons.cart" alt="cart" class="product-card__buy-icon" />
+          <img :src="icons.cart" alt="" aria-hidden="true" class="product-card__buy-icon" />
           <span>В корзину</span>
         </span>
 
         <span class="product-card__buy-price">{{ formattedPrice }} ₽</span>
       </AppButton>
 
-      <div v-else class="product-card__counter">
+      <div class="product-card__counter">
         <button
             class="product-card__counter-btn"
             type="button"
-            aria-label="Уменьшить количество"
+            :aria-label="`Уменьшить количество ${product.title}`"
             @click="handleRemove"
         >
           −
@@ -81,17 +104,18 @@
         <button
             class="product-card__counter-main"
             type="button"
+            :aria-label="`Открыть карточку товара ${product.title}, в корзине ${qty} шт.`"
             @click="emit('open', product)"
         >
           <span class="product-card__counter-text">В корзине</span>
-          <span class="product-card__counter-dot">•</span>
+          <span class="product-card__counter-dot" aria-hidden="true">•</span>
           <span class="product-card__counter-qty">{{ qty }} шт</span>
         </button>
 
         <button
             class="product-card__counter-btn"
             type="button"
-            aria-label="Увеличить количество"
+            :aria-label="`Увеличить количество ${product.title}`"
             @click="handleAdd"
         >
           +
@@ -107,6 +131,8 @@ import AppBadge from './AppBadge.vue'
 import AppButton from './AppButton.vue'
 import AppContainer from './AppContainer.vue'
 import { useCartStore } from '@/shared/cartStore'
+import { useFavorites } from '@/composables/useFavorites'
+import { useCompare } from '@/composables/useCompare'
 import { asset } from '@/utils/asset'
 import type { Product } from '@/types'
 
@@ -124,12 +150,18 @@ const icons = {
   star: asset('ProductCard3.png'),
   reviews: asset('ProductCard4.png'),
   cart: asset('ProductCard2.png'),
+  heart: asset('img6.png'),
+  compare: asset('img4.png'),
 }
 
 const { addToCart, removeFromCart, getQty, formatPrice } = useCartStore()
+const { toggle: toggleFavoriteItem, hasProduct: hasFavoriteProduct } = useFavorites()
+const { toggle: toggleCompareItem, hasProduct: hasCompareProduct } = useCompare()
 
 const qty = computed<number>(() => getQty(props.product.id))
 const formattedPrice = computed<string>(() => formatPrice(props.product.price))
+const isFavorite = computed<boolean>(() => hasFavoriteProduct(props.product.id))
+const isCompared = computed<boolean>(() => hasCompareProduct(props.product.id))
 
 function handleAdd(): void {
   addToCart(props.product)
@@ -137,6 +169,14 @@ function handleAdd(): void {
 
 function handleRemove(): void {
   removeFromCart(props.product.id)
+}
+
+function toggleFavorite(product: Product): void {
+  toggleFavoriteItem(product)
+}
+
+function toggleCompare(product: Product): void {
+  toggleCompareItem(product)
 }
 </script>
 
@@ -160,10 +200,10 @@ function handleRemove(): void {
 }
 
 .product-card__category {
-  color: #8c9199;
+  color: #6d737b;
   font-size: 12px;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 500;
   text-transform: lowercase;
 }
 
@@ -172,6 +212,30 @@ function handleRemove(): void {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.product-card__action-icon {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.product-card__action-icon.is-active {
+  background: rgba(255, 91, 0, 0.12);
+}
+
+.product-card__action-icon:focus-visible,
+.product-card__image-wrap:focus-visible,
+.product-card__counter-btn:focus-visible,
+.product-card__counter-main:focus-visible {
+  outline: 2px solid #ff5b00;
+  outline-offset: 2px;
 }
 
 .product-card__rating,
@@ -211,10 +275,10 @@ function handleRemove(): void {
 
 .product-card__level {
   margin-top: 6px;
-  color: #a3a8b0;
+  color: #737982;
   font-size: 12px;
-  line-height: 1.1;
-  font-weight: 400;
+  line-height: 1.2;
+  font-weight: 500;
 }
 
 .product-card__image-wrap {
@@ -265,10 +329,10 @@ function handleRemove(): void {
 }
 
 .product-card__spec-value {
-  color: #585e66;
+  color: #4a4f56;
   font-size: 13px;
-  line-height: 1.15;
-  font-weight: 400;
+  line-height: 1.2;
+  font-weight: 500;
 }
 
 .product-card__bottom {
@@ -329,9 +393,10 @@ function handleRemove(): void {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.product-card__counter-btn:hover {
+.product-card__counter-btn:hover,
+.product-card__counter-btn:focus-visible {
   background: rgba(255, 91, 0, 0.08);
-  color: #ff5b00;
+  color: #d45500;
 }
 
 .product-card__counter-main {

@@ -1,9 +1,88 @@
-import { computed, reactive } from 'vue'
-import type { CartItem, CartState, Product } from '../types'
+import { computed, reactive, watch } from 'vue'
+import { CART_STORAGE_KEY } from '@/constants/storageKeys'
+import type { CartItem, CartState, Product } from '@/types'
 
-const cartState = reactive<CartState>({
-    items: {},
-})
+function getDefaultState(): CartState {
+    return {
+        items: {},
+    }
+}
+
+function readCartState(): CartState {
+    if (typeof window === 'undefined') {
+        return getDefaultState()
+    }
+
+    try {
+        const raw = window.localStorage.getItem(CART_STORAGE_KEY)
+
+        if (!raw) {
+            return getDefaultState()
+        }
+
+        const parsed = JSON.parse(raw) as Partial<CartState>
+
+        if (!parsed || typeof parsed !== 'object' || !parsed.items || typeof parsed.items !== 'object') {
+            return getDefaultState()
+        }
+
+        const normalizedItems: Record<string, CartItem> = {}
+
+        Object.entries(parsed.items).forEach(([key, value]) => {
+            if (!value || typeof value !== 'object') return
+
+            const item = value as Partial<CartItem>
+
+            if (
+                item.id === undefined ||
+                typeof item.title !== 'string' ||
+                typeof item.price !== 'number' ||
+                typeof item.image !== 'string' ||
+                typeof item.qty !== 'number'
+            ) {
+                return
+            }
+
+            if (item.qty <= 0) {
+                return
+            }
+
+            normalizedItems[key] = {
+                id: item.id,
+                title: item.title,
+                price: item.price,
+                image: item.image,
+                qty: item.qty,
+            }
+        })
+
+        return {
+            items: normalizedItems,
+        }
+    } catch {
+        return getDefaultState()
+    }
+}
+
+const cartState = reactive<CartState>(readCartState())
+
+function persistCartState(): void {
+    if (typeof window === 'undefined') return
+
+    try {
+        window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartState))
+    } catch {
+        // ignore localStorage quota/private mode errors
+    }
+}
+
+watch(
+    cartState,
+    () => {
+        persistCartState()
+    },
+    { deep: true },
+)
 
 function getItemKey(productId: Product['id']): string {
     return String(productId)

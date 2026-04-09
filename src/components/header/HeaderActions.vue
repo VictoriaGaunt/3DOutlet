@@ -9,23 +9,27 @@
       <img :src="icons.search" alt="" aria-hidden="true" class="header-actions__icon" />
     </button>
 
-    <button
-        class="header-actions__icon-btn header-actions__icon-btn--desktop-only"
-        type="button"
+    <RouterLink
+        to="/favorites"
+        class="header-actions__icon-btn header-actions__icon-btn--desktop-only header-actions__nav-btn"
         aria-label="Избранное"
-        @click="$emit('open-modal', 'Избранное', 'Здесь позже будет список избранного.')"
     >
       <img :src="icons.heart" alt="" aria-hidden="true" class="header-actions__icon" />
-    </button>
+      <span v-if="favoritesCount > 0" class="header-actions__badge">
+        {{ favoritesCount }}
+      </span>
+    </RouterLink>
 
-    <button
-        class="header-actions__icon-btn header-actions__icon-btn--desktop-only"
-        type="button"
+    <RouterLink
+        to="/compare"
+        class="header-actions__icon-btn header-actions__icon-btn--desktop-only header-actions__nav-btn"
         aria-label="Сравнение"
-        @click="$emit('open-modal', 'Сравнение', 'Здесь позже будет блок сравнения товаров.')"
     >
       <img :src="icons.chart" alt="" aria-hidden="true" class="header-actions__icon" />
-    </button>
+      <span v-if="compareCount > 0" class="header-actions__badge">
+        {{ compareCount }}
+      </span>
+    </RouterLink>
 
     <button class="header-actions__cart" type="button" @click="$emit('open-cart')">
       <img :src="icons.cart" alt="" aria-hidden="true" class="header-actions__cart-icon" />
@@ -62,6 +66,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useFavorites } from '@/composables/useFavorites'
+import { useCompare } from '@/composables/useCompare'
 import { asset } from '@/utils/asset'
 
 interface Props {
@@ -78,6 +85,9 @@ defineEmits<{
   (e: 'toggle-mobile-menu'): void
 }>()
 
+const { totalCount: favoritesTotalCount } = useFavorites()
+const { totalCount: compareTotalCount } = useCompare()
+
 const icons = {
   search: asset('img7.png'),
   heart: asset('img6.png'),
@@ -87,6 +97,8 @@ const icons = {
 
 const cartCountText = computed(() => `${props.totalCount} шт.`)
 const cartPriceText = computed(() => `${props.formatPrice(props.totalPrice)} ₽`)
+const favoritesCount = computed(() => favoritesTotalCount.value)
+const compareCount = computed(() => compareTotalCount.value)
 </script>
 
 <style scoped>
@@ -109,6 +121,10 @@ const cartPriceText = computed(() => `${props.formatPrice(props.totalPrice)} ₽
   cursor: pointer;
   position: relative;
   transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.header-actions__nav-btn {
+  text-decoration: none;
 }
 
 .header-actions__icon-btn:hover {
@@ -176,7 +192,8 @@ const cartPriceText = computed(() => `${props.formatPrice(props.totalPrice)} ₽
   display: none;
 }
 
-.header-actions__mobile-badge {
+.header-actions__mobile-badge,
+.header-actions__badge {
   position: absolute;
   top: -4px;
   right: -4px;

@@ -4,6 +4,7 @@
       :to="to"
       :type="tag === 'button' ? nativeType : undefined"
       :disabled="disabled"
+      :aria-disabled="disabled ? 'true' : undefined"
       :class="[
       'app-button',
       `app-button--${variant}`,
@@ -76,6 +77,11 @@ const tag = computed(() => (props.to ? 'router-link' : 'button'))
   transform: scale(0.98);
 }
 
+.app-button:focus-visible {
+  outline: 2px solid #ff5b00;
+  outline-offset: 2px;
+}
+
 .app-button.is-block {
   width: 100%;
 }
@@ -110,8 +116,10 @@ const tag = computed(() => (props.to ? 'router-link' : 'button'))
 }
 
 .app-button--default:hover,
-.app-button--secondary:hover {
-  background: #f07f17;
+.app-button--default:focus-visible,
+.app-button--secondary:hover,
+.app-button--secondary:focus-visible {
+  background: #d45500;
   color: #ffffff;
 }
 
@@ -121,19 +129,21 @@ const tag = computed(() => (props.to ? 'router-link' : 'button'))
   box-shadow: 0 10px 20px rgba(255, 91, 0, 0.14);
 }
 
-.app-button--primary:hover {
-  background: #e65100;
+.app-button--primary:hover,
+.app-button--primary:focus-visible {
+  background: #c94700;
 }
 
 .app-button--ghost {
   background: transparent;
   color: #1b1b1b;
-  border: 1px solid rgba(17, 17, 17, 0.12);
+  border: 1px solid rgba(17, 17, 17, 0.18);
 }
 
-.app-button--ghost:hover {
+.app-button--ghost:hover,
+.app-button--ghost:focus-visible {
   background: rgba(240, 127, 23, 0.08);
-  color: #f07f17;
-  border-color: rgba(240, 127, 23, 0.24);
+  color: #b84800;
+  border-color: rgba(240, 127, 23, 0.34);
 }
 </style>
